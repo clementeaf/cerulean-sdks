@@ -265,3 +265,64 @@ export interface PrivateDataWriteResponse {
   hash: string;
 }
 
+// ── Alias types ─────────────────────────────────────────────────────────────
+
+/**
+ * POST /alias/register request body.
+ *
+ * Signing payload (UTF-8 bytes): `"alias:register:{commitment}"`
+ */
+export interface AliasRegisterRequest {
+  did: string;
+  /** Ed25519 public key, hex-encoded (64 chars = 32 bytes). */
+  public_key: string;
+  /** SHA3-256 commitment: `hex(SHA3-256(salt || alias))`, 64 hex chars. */
+  commitment: string;
+  /** Deterministic salt, hex-encoded (32 chars = 16 bytes). */
+  salt: string;
+  /** AES-256-GCM encrypted alias (hex). Opaque to the node. */
+  encrypted_alias: string;
+  /** Ed25519 signature over `"alias:register:{commitment}"`, hex-encoded. */
+  signature: string;
+}
+
+/** POST /alias/resolve request body. */
+export interface AliasResolveRequest {
+  commitment: string;
+}
+
+/** POST /alias/resolve response (active alias). */
+export interface AliasResolveResponse {
+  did: string;
+  address: string;
+}
+
+/**
+ * POST /alias/revoke request body.
+ *
+ * Signing payload (UTF-8 bytes): `"alias:revoke:{commitment}"`
+ */
+export interface AliasRevokeRequest {
+  did: string;
+  /** Ed25519 public key, hex-encoded (64 chars = 32 bytes). */
+  public_key: string;
+  commitment: string;
+  /** Ed25519 signature over `"alias:revoke:{commitment}"`, hex-encoded. */
+  signature: string;
+}
+
+/** POST /alias/register and POST /alias/revoke success response. */
+export interface AliasActionResponse {
+  commitment: string;
+  did?: string;
+  status?: string;
+}
+
+/** GET /alias/by-did/{did} response (active alias). */
+export interface AliasByDidResponse {
+  commitment: string;
+  did: string;
+  encrypted_alias: string;
+  registered_at: number;
+}
+

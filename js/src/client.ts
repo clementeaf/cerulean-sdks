@@ -33,6 +33,12 @@ import {
   CreateChannelRequest,
   ChannelInfo,
   PrivateDataWriteResponse,
+  AliasRegisterRequest,
+  AliasResolveRequest,
+  AliasResolveResponse,
+  AliasRevokeRequest,
+  AliasActionResponse,
+  AliasByDidResponse,
 } from './types';
 
 export class BlockchainClient {
@@ -541,6 +547,61 @@ export class BlockchainClient {
         { headers: { 'X-Org-Id': orgId } }
       );
       return unwrapGatewayData<string>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // ── Alias registry ──────────────────────────────────────────────────────
+
+  /**
+   * Register an alias commitment.
+   *
+   * Signing payload: `"alias:register:{commitment}"` as UTF-8 bytes.
+   */
+  async registerAlias(request: AliasRegisterRequest): Promise<AliasActionResponse> {
+    try {
+      const response = await this.client.post<unknown>('/alias/register', request);
+      return unwrapGatewayData<AliasActionResponse>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
+   * Resolve a commitment to its DID and address.
+   */
+  async resolveAlias(commitment: string): Promise<AliasResolveResponse> {
+    try {
+      const body: AliasResolveRequest = { commitment };
+      const response = await this.client.post<unknown>('/alias/resolve', body);
+      return unwrapGatewayData<AliasResolveResponse>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
+   * Revoke an alias (15-day cooldown before re-registration).
+   *
+   * Signing payload: `"alias:revoke:{commitment}"` as UTF-8 bytes.
+   */
+  async revokeAlias(request: AliasRevokeRequest): Promise<AliasActionResponse> {
+    try {
+      const response = await this.client.post<unknown>('/alias/revoke', request);
+      return unwrapGatewayData<AliasActionResponse>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
+   * Reverse lookup: resolve a DID to its active alias.
+   */
+  async getAliasByDid(did: string): Promise<AliasByDidResponse> {
+    try {
+      const response = await this.client.get<unknown>(`/alias/by-did/${did}`);
+      return unwrapGatewayData<AliasByDidResponse>(response.data);
     } catch (error) {
       this.handleError(error);
     }
