@@ -8,6 +8,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### 2026-05-22
 
+**Staking support**
+
+- `stake()` — stake tokens to become a validator
+- `unstake()` — request unstaking (lock period)
+- `completeUnstake()` — complete unstaking after lock period
+- `getValidators()` — list active validators
+- `getValidator(address)` — get validator info
+- `getMyStake(address)` — get own stake info
+- New types: `StakeRequest`, `StakeResponse`, `UnstakeRequest`, `UnstakeResponse`, `CompleteUnstakeRequest`, `CompleteUnstakeResponse`, `Validator`
+
 **Alias registry support**
 
 - `registerAlias()` — register an alias commitment with Ed25519 signature

@@ -326,3 +326,57 @@ export interface AliasByDidResponse {
   registered_at: number;
 }
 
+// ── Staking types ───────────────────────────────────────────────────────────
+
+/** POST /staking/stake request body. */
+export interface StakeRequest {
+  address: string;
+  amount: number;
+}
+
+/** POST /staking/unstake request body. */
+export interface UnstakeRequest {
+  address: string;
+  /** Amount to unstake. Omit to unstake all. */
+  amount?: number;
+}
+
+/** POST /staking/complete-unstake request body. */
+export interface CompleteUnstakeRequest {
+  address: string;
+}
+
+/** POST /staking/stake response. */
+export interface StakeResponse {
+  address: string;
+  staked: number;
+}
+
+/** POST /staking/unstake response. */
+export interface UnstakeResponse {
+  address: string;
+  unstake_amount: number;
+  status: string;
+}
+
+/** POST /staking/complete-unstake response. */
+export interface CompleteUnstakeResponse {
+  address: string;
+  released: number;
+  status: string;
+}
+
+/** Validator info (GET /staking/validators, /validator/{address}, /my-stake/{address}). */
+export interface Validator {
+  address: string;
+  staked_amount: number;
+  is_active: boolean;
+  total_rewards: number;
+  created_at: number;
+  last_validated_block: number;
+  validation_count: number;
+  slash_count: number;
+  unstaking_requested: boolean;
+  unstaking_timestamp?: number | null;
+}
+

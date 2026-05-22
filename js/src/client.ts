@@ -39,6 +39,13 @@ import {
   AliasRevokeRequest,
   AliasActionResponse,
   AliasByDidResponse,
+  StakeRequest,
+  StakeResponse,
+  UnstakeRequest,
+  UnstakeResponse,
+  CompleteUnstakeRequest,
+  CompleteUnstakeResponse,
+  Validator,
 } from './types';
 
 export class BlockchainClient {
@@ -602,6 +609,80 @@ export class BlockchainClient {
     try {
       const response = await this.client.get<unknown>(`/alias/by-did/${did}`);
       return unwrapGatewayData<AliasByDidResponse>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // ── Staking ─────────────────────────────────────────────────────────────
+
+  /**
+   * Stake tokens to become a validator.
+   */
+  async stake(request: StakeRequest): Promise<StakeResponse> {
+    try {
+      const response = await this.client.post<unknown>('/staking/stake', request);
+      return unwrapGatewayData<StakeResponse>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
+   * Request unstaking (starts lock period).
+   */
+  async unstake(request: UnstakeRequest): Promise<UnstakeResponse> {
+    try {
+      const response = await this.client.post<unknown>('/staking/unstake', request);
+      return unwrapGatewayData<UnstakeResponse>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
+   * Complete unstaking after lock period expires.
+   */
+  async completeUnstake(request: CompleteUnstakeRequest): Promise<CompleteUnstakeResponse> {
+    try {
+      const response = await this.client.post<unknown>('/staking/complete-unstake', request);
+      return unwrapGatewayData<CompleteUnstakeResponse>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
+   * List active validators.
+   */
+  async getValidators(): Promise<Validator[]> {
+    try {
+      const response = await this.client.get<unknown>('/staking/validators');
+      return unwrapGatewayData<Validator[]>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
+   * Get validator info by address.
+   */
+  async getValidator(address: string): Promise<Validator> {
+    try {
+      const response = await this.client.get<unknown>(`/staking/validator/${address}`);
+      return unwrapGatewayData<Validator>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
+   * Get own stake info by address.
+   */
+  async getMyStake(address: string): Promise<Validator> {
+    try {
+      const response = await this.client.get<unknown>(`/staking/my-stake/${address}`);
+      return unwrapGatewayData<Validator>(response.data);
     } catch (error) {
       this.handleError(error);
     }
