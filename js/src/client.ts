@@ -46,6 +46,16 @@ import {
   CompleteUnstakeRequest,
   CompleteUnstakeResponse,
   Validator,
+  SubmitInferenceRequest,
+  SubmitInferenceResponse,
+  SubmitProvenRequest,
+  SubmitProvenResponse,
+  ChallengeInferenceRequest,
+  ChallengeResponse,
+  FinalizeResponse,
+  InferenceClaim,
+  ListClaimsQuery,
+  ModelSummary,
 } from './types';
 
 export class BlockchainClient {
@@ -683,6 +693,96 @@ export class BlockchainClient {
     try {
       const response = await this.client.get<unknown>(`/staking/my-stake/${address}`);
       return unwrapGatewayData<Validator>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  // ── Inference Oracle ────────────────────────────────────────────────────
+
+  /**
+   * Submit an inference claim (optimistic, 24h dispute window).
+   *
+   * Signing payload: `"inference:submit:{model_hash}:{output_hash}"` as UTF-8 bytes.
+   */
+  async submitInference(request: SubmitInferenceRequest): Promise<SubmitInferenceResponse> {
+    try {
+      const response = await this.client.post<unknown>('/inference/submit', request);
+      return unwrapGatewayData<SubmitInferenceResponse>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
+   * Submit an inference claim with ZK proof (instant finalization, no dispute window).
+   */
+  async submitProvenInference(request: SubmitProvenRequest): Promise<SubmitProvenResponse> {
+    try {
+      const response = await this.client.post<unknown>('/inference/submit-proven', request);
+      return unwrapGatewayData<SubmitProvenResponse>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
+   * Challenge a pending inference claim.
+   *
+   * Signing payload: `"challenge:{claim_id}:{challenger_output_hash}"` as UTF-8 bytes.
+   */
+  async challengeInference(request: ChallengeInferenceRequest): Promise<ChallengeResponse> {
+    try {
+      const response = await this.client.post<unknown>('/inference/challenge', request);
+      return unwrapGatewayData<ChallengeResponse>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
+   * Finalize a claim after the dispute window expires (permissionless).
+   */
+  async finalizeInference(claimId: string): Promise<FinalizeResponse> {
+    try {
+      const response = await this.client.post<unknown>(`/inference/finalize/${claimId}`);
+      return unwrapGatewayData<FinalizeResponse>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
+   * List inference claims with optional filters.
+   */
+  async listInferenceClaims(query?: ListClaimsQuery): Promise<InferenceClaim[]> {
+    try {
+      const response = await this.client.get<unknown>('/inference/claims', { params: query });
+      return unwrapGatewayData<InferenceClaim[]>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
+   * Get a single inference claim by ID.
+   */
+  async getInferenceClaim(claimId: string): Promise<InferenceClaim> {
+    try {
+      const response = await this.client.get<unknown>(`/inference/claims/${claimId}`);
+      return unwrapGatewayData<InferenceClaim>(response.data);
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  /**
+   * List known models with claim counts.
+   */
+  async listInferenceModels(): Promise<ModelSummary[]> {
+    try {
+      const response = await this.client.get<unknown>('/inference/models');
+      return unwrapGatewayData<ModelSummary[]>(response.data);
     } catch (error) {
       this.handleError(error);
     }

@@ -8,6 +8,17 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### 2026-05-22
 
+**Inference Oracle support (Optimistic ML Oracle)**
+
+- `submitInference()` — submit claim with dispute window (optimistic)
+- `submitProvenInference()` — submit claim with ZK proof (instant finalization)
+- `challengeInference()` — challenge a pending claim
+- `finalizeInference(claimId)` — finalize after dispute window
+- `listInferenceClaims(query?)` — list claims with status/oracle/model filters
+- `getInferenceClaim(claimId)` — get claim details
+- `listInferenceModels()` — list known models with claim counts
+- New types: `InferenceClaim`, `OutputTolerance`, `ClaimStatus`, `ProofType`, `ZkInferenceProof`, `ModelSummary`, and request/response types for all endpoints
+
 **Staking support**
 
 - `stake()` — stake tokens to become a validator

@@ -380,3 +380,138 @@ export interface Validator {
   unstaking_timestamp?: number | null;
 }
 
+// ── Inference Oracle types ──────────────────────────────────────────────────
+
+/** Tolerance mode for comparing inference outputs during disputes. */
+export type OutputTolerance =
+  | 'Exact'
+  | { Numeric: { threshold: number } }
+  | { Cosine: { min_similarity: number } };
+
+/** Claim status in the optimistic oracle lifecycle. */
+export type ClaimStatus = 'Pending' | 'Finalized' | 'Disputed' | 'Slashed' | 'Rejected';
+
+/** Proof types for zkML bridge. */
+export type ProofType = 'Sha256Commitment' | 'Groth16Bn254' | 'PlonkBn254' | 'StarkFri';
+
+/** ZK proof submitted with a proven inference claim. */
+export interface ZkInferenceProof {
+  proof_type: ProofType;
+  /** Proof bytes, hex-encoded. */
+  proof_data: string;
+  /** Verification key, hex-encoded (required for SNARK/STARK). */
+  verification_key?: string | null;
+}
+
+/**
+ * POST /inference/submit request body.
+ *
+ * Signing payload: `"inference:submit:{model_hash}:{output_hash}"` as UTF-8 bytes.
+ */
+export interface SubmitInferenceRequest {
+  oracle_id: string;
+  /** SHA3-256 of model weights (64 hex chars). */
+  model_hash: string;
+  model_version: string;
+  /** SHA3-256 of input data (64 hex chars). */
+  input_hash: string;
+  input_uri?: string;
+  /** Inference output (JSON-serialized). */
+  output: string;
+  /** SHA3-256 of output (64 hex chars). */
+  output_hash: string;
+  /** Ed25519 signature over signing payload, hex-encoded. */
+  signature: string;
+  /** Ed25519 public key (hex, 64 chars). */
+  public_key: string;
+  tolerance?: OutputTolerance;
+}
+
+/** POST /inference/submit-proven request body. */
+export interface SubmitProvenRequest extends SubmitInferenceRequest {
+  proof: ZkInferenceProof;
+}
+
+/**
+ * POST /inference/challenge request body.
+ *
+ * Signing payload: `"challenge:{claim_id}:{challenger_output_hash}"` as UTF-8 bytes.
+ */
+export interface ChallengeInferenceRequest {
+  claim_id: string;
+  challenger_id: string;
+  challenger_output: string;
+  /** SHA3-256 of challenger output (64 hex chars). */
+  challenger_output_hash: string;
+  /** Ed25519 signature over signing payload, hex-encoded. */
+  signature: string;
+  /** Ed25519 public key (hex, 64 chars). */
+  public_key: string;
+}
+
+/** Inference claim returned by GET /inference/claims. */
+export interface InferenceClaim {
+  id: string;
+  oracle_id: string;
+  model_hash: string;
+  model_version: string;
+  input_hash: string;
+  input_uri?: string | null;
+  output: string;
+  output_hash: string;
+  timestamp: number;
+  signature: string;
+  status: ClaimStatus;
+  tolerance: OutputTolerance;
+  dispute_deadline: number;
+  finalized_at?: number | null;
+}
+
+/** POST /inference/submit response. */
+export interface SubmitInferenceResponse {
+  id: string;
+  status: string;
+  dispute_deadline: number;
+}
+
+/** POST /inference/submit-proven response. */
+export interface SubmitProvenResponse {
+  id: string;
+  status: string;
+  proof_type: string;
+  finalized_at: number;
+}
+
+/** POST /inference/challenge response. */
+export interface ChallengeResponse {
+  challenge_id: string;
+  claim_id: string;
+  succeeded: boolean;
+  claim_status: string;
+  oracle_id: string;
+  challenger_id: string;
+}
+
+/** POST /inference/finalize response. */
+export interface FinalizeResponse {
+  id: string;
+  status: string;
+  finalized_at: number;
+}
+
+/** GET /inference/models response item. */
+export interface ModelSummary {
+  model_hash: string;
+  model_version: string;
+  total_claims: number;
+  finalized: number;
+  pending: number;
+}
+
+/** Query params for GET /inference/claims. */
+export interface ListClaimsQuery {
+  status?: string;
+  oracle_id?: string;
+  model_hash?: string;
+}
+
